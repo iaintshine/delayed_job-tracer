@@ -1,6 +1,6 @@
 # Delayed::Plugins::Tracer
 
-TODO:
+OpenTracing auto-instrumentation for `Delayed::Job`.
 
 ## Installation
 
@@ -18,9 +18,27 @@ Or install it yourself as:
 
     $ gem install delayed-plugins-tracer
 
-## Usage
+Run: 
 
-TODO:
+    $ rails g delayed_job:install_tracer
+    
+This will generate a migration that will add a column for span context propagation.
+
+Run the migration:
+
+    $ rake db:migrate
+
+Now it's time to initialize the plugin in `config/initializers/delayed_job.rb`, or other file where you normally initialize DelayedJob.
+
+```ruby
+require "delayed/plugins/tracer"
+
+Delayed::Worker.plugins << Delayed::Plugins::Tracer.build(tracer: OpenTracing.global_tracer,
+                                                          active_span: -> { OpenTracing.global_tracer.active_span })
+```
+
+You are all set.
+
 
 ## Development
 
@@ -31,7 +49,3 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/iaintshine/ruby-delayed-plugins-tracer. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## Code of Conduct
-
-Everyone interacting in the Delayed::Plugins::Tracer project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/delayed-plugins-tracer/blob/master/CODE_OF_CONDUCT.md).
