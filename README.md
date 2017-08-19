@@ -31,6 +31,7 @@ Run the migration:
     $ rake db:migrate
 
 Now it's time to initialize the plugin in `config/initializers/delayed_job.rb`, or other file where you normally initialize DelayedJob.
+To create a new instance of the tracing plugin you need to specify at least a tracer instance and optionally an active span provider - a proc which returns a current active span. The gem plays nicely with [spanmanager](https://github.com/iaintshine/ruby-spanmanager).
 
 ```ruby
 require "delayed/plugins/tracer"
