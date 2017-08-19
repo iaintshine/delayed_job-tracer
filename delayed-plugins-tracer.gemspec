@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency 'delayed_job_active_record',  "~> 4.1"
-  spec.add_dependency 'railties'
+  spec.add_dependency 'railties', '>= 3.2'
   spec.add_dependency 'multi_json'
   spec.add_dependency 'opentracing', '~> 0.3.1'
   spec.add_dependency 'method-tracer', '~> 1.1'
