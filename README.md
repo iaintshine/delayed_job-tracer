@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/iaintshine/ruby-delayed-plugins-tracer.svg?branch=master)](https://travis-ci.org/iaintshine/ruby-delayed-plugins-tracer)
+
 # Delayed::Plugins::Tracer
 
 OpenTracing auto-instrumentation for `Delayed::Job`.
