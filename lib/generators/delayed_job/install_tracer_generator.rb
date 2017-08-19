@@ -2,7 +2,7 @@ require "rails/generators"
 require "rails/generators/active_record"
 
 module DelayedJob
-  class InstallTracer < Rails::Generators::Base
+  class InstallTracerGenerator < Rails::Generators::Base
     include ActiveRecord::Generators::Migration
     source_root File.expand_path("../templates", __FILE__)
 
