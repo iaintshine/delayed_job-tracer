@@ -1,4 +1,4 @@
-class Delayed::Plugins::Tracer
+module Delayed::Plugins::Tracer
   class Handler
     attr_reader :tracer, :active_span
 
@@ -14,7 +14,7 @@ class Delayed::Plugins::Tracer
       tags = {
         'component' => 'Delayed::Job',
         'span.kind' => 'client',
-        'dj.queue' => job.queue
+        'dj.queue' => (job.queue || 'default')
       }
       Method::Tracer.trace(operation_name(job), tracer: tracer, child_of: active_span, tags: tags) do |span|
         inject(span, job)
@@ -26,7 +26,9 @@ class Delayed::Plugins::Tracer
       tags = {
         'component' => 'Delayed::Job',
         'span.kind' => 'server',
-        'dj.queue' => job.queue
+        'dj.id' => job.id,
+        'dj.queue' => (job.queue || 'default'),
+        'dj.attempts' => job.attempts
       }
       parent_span_context = extract(job)
 
@@ -45,8 +47,8 @@ class Delayed::Plugins::Tracer
 
     def extract(job)
       return unless job.metadata
-      job.metadata = MultiJson.load(job.metadata)
-      tracer.extract(OpenTracing::FORMAT_TEXT_MAP, job.metadata)
+      carrier = MultiJson.load(job.metadata)
+      tracer.extract(OpenTracing::FORMAT_TEXT_MAP, carrier)
     rescue MultiJson::ParseError
     end
 
