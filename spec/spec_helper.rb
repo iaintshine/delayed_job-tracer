@@ -2,6 +2,7 @@ ENV['RAILS_ENV'] = 'test'
 require "bundler/setup"
 require 'database_cleaner'
 require "test/tracer"
+require "tracing/matchers"
 require "delayed/plugins/tracer"
 require "pry"
 

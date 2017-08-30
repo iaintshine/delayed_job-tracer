@@ -16,29 +16,27 @@ RSpec.describe Delayed::Plugins::Tracer do
       end
 
       it "creates a new span" do
-        expect(tracer.finished_spans).not_to be_empty
+        expect(tracer).to have_spans
       end
 
       it "sets operation_name to job name" do
-        expect(tracer.finished_spans.first.operation_name).to eq("TestJob")
+        expect(tracer).to have_span("TestJob")
       end
 
       it "sets standard OT tags" do
-        tags = tracer.finished_spans.first.tags
         [
           ['component', 'Delayed::Job'],
           ['span.kind', 'client']
         ].each do |key, value|
-          expect(tags[key]).to eq(value), "expected tag '#{key}' value to equal '#{value}', got '#{tags[key]}'"
+          expect(tracer).to have_span.with_tag(key, value)
         end
       end
 
       it "sets database specific OT tags" do
-        tags = tracer.finished_spans.first.tags
         [
           ['dj.queue', 'test'],
         ].each do |key, value|
-          expect(tags[key]).to eq(value), "expected tag '#{key}' value to equal '#{value}', got '#{tags[key]}'"
+          expect(tracer).to have_span.with_tag(key, value)
         end
       end
     end
@@ -52,13 +50,12 @@ RSpec.describe Delayed::Plugins::Tracer do
       end
 
       it "creates the new span with active span trace_id" do
-        enqueue_span = tracer.finished_spans.last
-        expect(enqueue_span.context.trace_id).to eq(root_span.context.trace_id)
+        expect(tracer).to have_traces(1)
+        expect(tracer).to have_spans(2)
       end
 
       it "creates the new span with active span as a parent" do
-        enqueue_span = tracer.finished_spans.last
-        expect(enqueue_span.context.parent_span_id).to eq(root_span.context.span_id)
+        expect(tracer).to have_span.with_parent(root_span)
       end
     end
 
@@ -75,9 +72,7 @@ RSpec.describe Delayed::Plugins::Tracer do
         carrier = MultiJson.load(job.metadata)
         extracted_span_context = tracer.extract(OpenTracing::FORMAT_TEXT_MAP, carrier)
 
-        expect(enqueue_span.context.trace_id).to eq(extracted_span_context.trace_id)
-        expect(enqueue_span.context.span_id).to eq(extracted_span_context.span_id)
-        expect(enqueue_span.context.parent_span_id).to eq(extracted_span_context.parent_span_id)
+        expect(enqueue_span.context).to eq(extracted_span_context)
       end
     end
   end
@@ -91,32 +86,29 @@ RSpec.describe Delayed::Plugins::Tracer do
       end
 
       it "creates a new span" do
-        expect(tracer.finished_spans).not_to be_empty
-        expect(tracer.finished_spans.size).to eq(1)
+        expect(tracer).to have_spans(1)
       end
 
       it "sets operation_name to job name" do
-        expect(tracer.finished_spans.first.operation_name).to eq("TestJob")
+        expect(tracer).to have_span("TestJob")
       end
 
       it "sets standard OT tags" do
-        tags = tracer.finished_spans.first.tags
         [
           ['component', 'Delayed::Job'],
           ['span.kind', 'server']
         ].each do |key, value|
-          expect(tags[key]).to eq(value), "expected tag '#{key}' value to equal '#{value}', got '#{tags[key]}'"
+          expect(tracer).to have_span.with_tag(key, value)
         end
       end
 
       it "sets database specific OT tags" do
-        tags = tracer.finished_spans.first.tags
         [
           ['dj.id', @job.id],
           ['dj.queue', 'test'],
           ['dj.attempts', 0]
         ].each do |key, value|
-          expect(tags[key]).to eq(value), "expected tag '#{key}' value to equal '#{value}', got '#{tags[key]}'"
+          expect(tracer).to have_span.with_tag(key, value)
         end
       end
     end
@@ -133,21 +125,18 @@ RSpec.describe Delayed::Plugins::Tracer do
     end
 
     it "creates spans for each part of the chain" do
-      expect(tracer.finished_spans).not_to be_empty
-      expect(tracer.finished_spans.size).to eq(3)
+      expect(tracer).to have_spans(3)
     end
 
     it "all spans contains the same trace_id" do
-      tracer.finished_spans.each do |span|
-        expect(span.context.trace_id).to eq(root_span.context.trace_id)
-      end
+      expect(tracer).to have_traces(1)
     end
 
     it "propagates parent child relationship properly" do
       client_span = tracer.finished_spans[0]
       server_span = tracer.finished_spans[1]
-      expect(client_span.context.parent_span_id).to eq(root_span.context.span_id)
-      expect(server_span.context.parent_span_id).to eq(client_span.context.span_id)
+      expect(client_span).to be_child_of(root_span)
+      expect(server_span).to be_child_of(client_span)
     end
   end
 
