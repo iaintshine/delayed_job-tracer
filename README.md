@@ -34,7 +34,7 @@ Now it's time to initialize the plugin in `config/initializers/delayed_job.rb`, 
 To create a new instance of the tracing plugin you need to specify at least a tracer instance and optionally an active span provider - a proc which returns a current active span. The gem plays nicely with [spanmanager](https://github.com/iaintshine/ruby-spanmanager).
 
 ```ruby
-require "delayed/plugins/tracer"
+require "delayed-plugins-tracer"
 
 Delayed::Worker.plugins << Delayed::Plugins::Tracer.build(tracer: OpenTracing.global_tracer,
                                                           active_span: -> { OpenTracing.global_tracer.active_span })

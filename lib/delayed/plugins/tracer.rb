@@ -3,8 +3,8 @@ require 'multi_json'
 require "active_record"
 require "delayed_job"
 require "delayed_job_active_record"
+require 'method-tracer'
 
-require 'method/tracer'
 require 'delayed/plugins/tracer/handler'
 
 module Delayed
